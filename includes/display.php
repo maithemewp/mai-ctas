@@ -12,10 +12,6 @@ add_action( 'get_header', 'mai_do_ctas' );
  * @return void
  */
 function mai_do_ctas() {
-	if ( ! function_exists( 'get_field' ) ) {
-		return;
-	}
-
 	if ( ! is_singular() ) {
 		return;
 	}
@@ -45,6 +41,7 @@ function mai_cta_do_cta( $args ) {
 	$args = wp_parse_args( $args,
 		[
 			'location'   => '',
+			'include'    => '',
 			'exclude'    => '',
 			'content'    => '',
 			'taxonomies' => '',
@@ -54,33 +51,57 @@ function mai_cta_do_cta( $args ) {
 
 	$locations = mai_cta_get_locations();
 
+	// Bail if no location and no content. Only check isset for location since 'content' has no hook.
 	if ( ! ( isset( $locations[ $args['location'] ] ) && $args['content'] ) ) {
 		return;
 	}
 
-	if ( ! $args['content'] ) {
+	// Bail if excluding this entry.
+	if ( $args['exclude'] && in_array( get_the_ID(), (array) $args['exclude'] ) ) {
 		return;
 	}
 
-	if ( $args['exclude'] && in_array( get_the_ID(), $args['exclude'] ) ) {
-		return;
-	}
+	$show = true;
 
+	// Check taxonomies.
 	if ( $args['taxonomies'] ) {
-		$has_term = false;
 
-		foreach ( $args['taxonomies'] as $taxonomy => $term_ids ) {
+		$tax_show = false;
+		$tax_hide = false;
+
+		// Check if showing.
+		foreach ( $args['taxonomies'] as $taxonomy => $data ) {
+			$term_ids = isset( $data['terms'] ) ? $data['terms'] : [];
+			$operator = isset( $data['operator'] ) ? $data['operator'] : 'IN';
+
+			if ( ! ( $term_ids && $operator ) ) {
+				continue;
+			}
+
 			if ( ! has_term( $term_ids, $taxonomy ) ) {
 				continue;
 			}
 
-			$has_term = true;
-			break;
+			switch ( $operator ) {
+				case 'IN':
+					$tax_show = true;
+				break;
+				case 'NOT IN':
+					$tax_hide = true;
+				break;
+			}
 		}
 
-		if ( ! $has_term ) {
-			return;
-		}
+		$show = $tax_show && ! $tax_hide;
+	}
+
+	// If including this entry.
+	if ( $args['include'] && in_array( get_the_ID(), (array) $args['include'] ) ) {
+		$show = true;
+	}
+
+	if ( ! $show ) {
+		return;
 	}
 
 	if ( 'content' === $args['location'] ) {
@@ -107,6 +128,10 @@ function mai_cta_do_cta( $args ) {
  * @return array
  */
 function mai_cta_get_ctas( $type ) {
+	if ( ! function_exists( 'get_field' ) ) {
+		return [];
+	}
+
 	static $ctas = null;
 
 	if ( isset( $ctas[ $type ] ) ) {
@@ -124,7 +149,7 @@ function mai_cta_get_ctas( $type ) {
 		$query = new WP_Query(
 			[
 				'post_type'              => 'mai_cta',
-				'posts_per_page'         => 500,
+				'posts_per_page'         => 100,
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
@@ -161,7 +186,7 @@ function mai_cta_get_ctas( $type ) {
 					$cta = [
 						'location'   => isset( $mai_cta['location'] ) ? $mai_cta['location'] : '',
 						'skip'       => isset( $mai_cta['skip'] ) ? $mai_cta['skip'] : '',
-						// 'include'    => isset( $mai_cta['include'] ) ? $mai_cta['include'] : '',
+						'include'    => isset( $mai_cta['include'] ) ? $mai_cta['include'] : '',
 						'exclude'    => isset( $mai_cta['exclude'] ) ? $mai_cta['exclude'] : '',
 						'content'    => get_post()->post_content,
 						'taxonomies' => [],
@@ -173,7 +198,8 @@ function mai_cta_get_ctas( $type ) {
 								continue;
 							}
 
-							$cta['taxonomies'][ $taxonomy ] = $mai_cta[ $taxonomy ];
+							$cta['taxonomies'][ $taxonomy ]['terms']     = $mai_cta[ $taxonomy ];
+							$cta['taxonomies'][ $taxonomy ]['operator' ] = isset( $mai_cta[ $taxonomy . '_operator' ] ) ? $mai_cta[ $taxonomy . '_operator' ] : 'IN';
 						}
 					}
 
@@ -279,7 +305,7 @@ function mai_cta_add_cta( $content, $cta, $skip ) {
 	$query    = [];
 
 	foreach ( $elements as $element ) {
-		$query[] = '/html/body/' . $element;
+		$query[] = '/html/body/' . $element . '[string-length() > 0]';
 	}
 
 	$elements = $xpath->query( implode( '|', $query ) );
@@ -301,8 +327,15 @@ function mai_cta_add_cta( $content, $cta, $skip ) {
 		$fragment = $dom->createDocumentFragment();
 		$fragment->appendXml( $cta );
 
-		// Add cta after this element.
-		$element->insertBefore( $fragment, $element->firstChild );
+		/**
+		 * Add cta after this element. There is no insertAfter() in PHP ¯\_(ツ)_/¯.
+		 * @link https://gist.github.com/deathlyfrantic/cd8d7ef8ba91544cdf06
+		 */
+		if ( null === $element->nextSibling ) {
+			$element->parentNode->appendChild( $fragment );
+		} else {
+			$element->parentNode->insertBefore( $fragment, $element->nextSibling );
+		}
 
 		// No need to keep looping.
 		break;
