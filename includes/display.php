@@ -54,6 +54,10 @@ function mai_cta_do_cta( $args ) {
 		return;
 	}
 
+	if ( $args['exclude'] && in_array( get_the_ID(), $args['exclude'] ) ) {
+		return;
+	}
+
 	if ( $args['taxonomies'] ) {
 		$has_term = false;
 
@@ -107,7 +111,7 @@ function mai_cta_get_ctas( $type ) {
 
 	$transient = sprintf( 'mai_ctas_%s', $type );
 
-	// if ( ! ( $use_transient && $ctas[ $type ] = get_transient( $transient ) ) ) {
+	// if ( $ctas[ $type ] !== get_transient( $transient ) ) {
 
 		$query = new WP_Query(
 			[

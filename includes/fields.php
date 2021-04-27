@@ -150,7 +150,7 @@ function mai_cta_get_settings_metabox_sub_fields() {
 			'instructions' => __( 'Location of CTA.', 'mai-ctas' ),
 			'key'          => 'mai_cta_location',
 			'name'         => 'location',
-			'type'         => 'select',
+			'type'         => 'radio',
 			'required'     => 1,
 			'choices'      => [
 				''                     => __( 'None (inactive)', 'mai-ctas' ),
