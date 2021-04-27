@@ -212,6 +212,7 @@ function mai_cta_get_locations() {
 		'content'              => '', // No hooks, counted in content.
 		'after_entry_content'  => 'genesis_after_entry_content',
 		'after_entry'          => 'genesis_after_entry',
+		'before_footer'        => 'genesis_after_content_sidebar_wrap',
 	];
 
 	return apply_filters( 'mai_cta_location_hooks', $hooks );

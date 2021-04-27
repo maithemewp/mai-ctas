@@ -158,7 +158,8 @@ function mai_cta_get_settings_metabox_sub_fields() {
 				'before_entry_content' => __( 'Before entry content', 'mai-ctas' ),
 				'content'              => __( 'In content', 'mai-ctas' ),
 				'after_entry_content'  => __( 'After entry content', 'mai-ctas' ),
-				'after_entry'          => __( 'Before footer', 'mai-ctas' ),
+				'after_entry'          => __( 'After entry', 'mai-ctas' ),
+				'before_footer'        => __( 'Before footer', 'mai-ctas' ),
 			],
 		],
 		[
