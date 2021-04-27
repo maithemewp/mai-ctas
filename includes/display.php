@@ -32,7 +32,15 @@ function mai_do_ctas() {
 	}
 }
 
-
+/**
+ * Displays a CTA.
+ *
+ * @since 0.1.0
+ *
+ * @param array $args The CTA args.
+ *
+ * @return void
+ */
 function mai_cta_do_cta( $args ) {
 	$args = wp_parse_args( $args,
 		[
@@ -184,6 +192,13 @@ function mai_cta_get_ctas( $type ) {
 	return $ctas[ $type ];
 }
 
+/**
+ * Get CTA hook locations.
+ *
+ * @since 0.1.0
+ *
+ * @return array
+ */
 function mai_cta_get_locations() {
 	static $hooks = null;
 
@@ -235,6 +250,19 @@ function mai_cta_get_processed_content( $content ) {
 	return $content;
 }
 
+/**
+ * Adds CTA to existing content/HTML.
+ *
+ * @since 0.1.0
+ *
+ * @uses DOMDocument
+ *
+ * @param string $content The existing html.
+ * @param string $cta     The CTA html.
+ * @param int    $skip    The amount of elements to skip before showing the CTA.
+ *
+ * @return string.
+ */
 function mai_cta_add_cta( $content, $cta, $skip ) {
 	$cta  = trim( $cta );
 	$skip = absint( $skip );
