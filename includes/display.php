@@ -343,7 +343,7 @@ function mai_cta_add_cta( $content, $cta, $skip ) {
 
 	$content = $dom->saveHTML();
 
-	return mai_get_processed_content( $content );
+	return mai_cta_get_processed_content( $content );
 }
 
 /**
