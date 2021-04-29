@@ -4,7 +4,7 @@
  * Plugin Name:     Mai CTAs
  * Plugin URI:      https://bizbudding.com/mai-theme/plugins/mai-ctas/
  * Description:     Display calls to action on posts, pages, and custom post types conditionally by category, tag, taxonomy, or entry title.
- * Version:         0.1.0
+ * Version:         0.1.1
  *
  * Author:          BizBudding
  * Author URI:      https://bizbudding.com
@@ -90,7 +90,7 @@ final class Mai_CTAs_Plugin {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_CTAS_VERSION' ) ) {
-			define( 'MAI_CTAS_VERSION', '0.1.0' );
+			define( 'MAI_CTAS_VERSION', '0.1.1' );
 		}
 
 		// Plugin Folder Path.
@@ -222,7 +222,7 @@ final class Mai_CTAs_Plugin {
 				'new_item'           => __( 'New CTA', 'mai-ctas' ),
 				'edit_item'          => __( 'Edit CTA', 'mai-ctas' ),
 				'view_item'          => __( 'View CTA', 'mai-ctas' ),
-				'all_items'          => __( 'All CTAs', 'mai-ctas' ),
+				'all_items'          => __( 'CTAs', 'mai-ctas' ),
 				'search_items'       => __( 'Search CTAs', 'mai-ctas' ),
 				'parent_item_colon'  => __( 'Parent CTAs:', 'mai-ctas' ),
 				'not_found'          => __( 'No CTAs found.', 'mai-ctas' ),
@@ -231,7 +231,7 @@ final class Mai_CTAs_Plugin {
 			'menu_icon'          => 'dashicons-megaphone',
 			'public'             => false,
 			'publicly_queryable' => false,
-			'show_in_menu'       => true,
+			'show_in_menu'       => false,
 			'show_in_nav_menus'  => false,
 			'show_in_rest'       => true,
 			'show_ui'            => true,
@@ -306,3 +306,31 @@ function mai_ctas_plugin() {
 
 // Get Mai_CTAs_Plugin Running.
 mai_ctas_plugin();
+
+// Move the "example_cpt" Custom-Post-Type to be a submenu of the "example_parent_page_id" admin page.
+add_action( 'admin_menu', 'fix_admin_menu_submenu', 15 );
+function fix_admin_menu_submenu() {
+	add_submenu_page(
+		'mai-theme',
+		esc_html__( 'CTAs', 'mai-engine' ),
+		esc_html__( 'CTAs', 'mai-engine' ),
+		'edit_posts',
+		'edit.php?post_type=mai_cta',
+		'',
+		30
+	);
+}
+
+add_filter( 'parent_file', 'fix_admin_parent_file' );
+function fix_admin_parent_file( $parent_file ) {
+	global $submenu_file, $current_screen;
+
+	if ( 'mai_cta' !== $current_screen->post_type ) {
+		return $parent_file;
+	}
+
+	$submenu_file = 'edit.php?post_type=mai_cta';
+	$parent_file = 'mai-theme';
+
+	return $parent_file;
+}

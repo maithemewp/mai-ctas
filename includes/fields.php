@@ -89,28 +89,6 @@ function mai_cta_load_display( $field ) {
 	return $field;
 }
 
-add_filter( 'acf/load_value/key=mai_cta_display', 'mai_cta_load_display_value', 10, 3 );
-/**
- * Loads display terms as choices.
- *
- * @since 0.1.0
- *
- * @param $value   mixed      The field value.
- * @param $post_id int|string The post ID where the value is saved.
- * @param $field   array      The field array containing all settings.
- *
- * @return array
- */
-function mai_cta_load_display_value( $value, $post_id, $field ) {
-	$terms = get_the_terms( $post_id, 'mai_cta_display' );
-
-	if ( $terms && ! is_wp_error( $terms ) ) {
-		$value = wp_list_pluck( $terms, 'slug' );
-	}
-
-	return $value;
-}
-
 add_filter( 'acf/fields/post_object/query/key=mai_cta_include', 'mai_cta_acf_get_posts', 10, 3 );
 add_filter( 'acf/fields/post_object/query/key=mai_cta_exclude', 'mai_cta_acf_get_posts', 10, 3 );
 /**
@@ -141,6 +119,43 @@ function mai_cta_acf_get_posts( $args, $field, $post_id ) {
 	}
 
 	return $args;
+}
+
+add_action( 'acf/save_post', 'mai_cta_save_display_terms', 5 );
+/**
+ * Saves row display values to taxonomy terms.
+ *
+ * @since 0.1.0
+ *
+ * @return void
+ */
+function mai_cta_save_display_terms( $post_id ) {
+	if ( 'mai_cta' !== get_post_type( $post_id ) ) {
+		return;
+	}
+
+	if ( ! ( isset( $_POST['acf'] ) && $_POST['acf'] ) ) {
+		return;
+	}
+
+	if ( ! ( isset( $_POST['acf']['mai_ctas'] ) && $_POST['acf']['mai_ctas'] ) ) {
+		return;
+	}
+
+	$terms = [];
+
+	foreach ( $_POST['acf']['mai_ctas'] as $cta ) {
+		if ( ! isset( $cta['mai_cta_display'] ) ) {
+			continue;
+		}
+
+		$terms = array_merge( $terms, (array) $cta['mai_cta_display'] );
+	}
+
+	$terms = array_filter( $terms );
+	$terms = array_unique( $terms );
+
+	wp_set_object_terms( $post_id, $terms, 'mai_cta_display', false );
 }
 
 add_action( 'init', 'mai_cta_add_settings_metabox', 99 );
