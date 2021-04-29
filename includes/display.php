@@ -107,6 +107,10 @@ function mai_cta_do_cta( $args ) {
 	if ( 'content' === $args['location'] ) {
 
 		add_filter( 'the_content', function( $content ) use ( $args ) {
+			if ( ! is_main_query() ) {
+				return $content;
+			}
+
 			return mai_cta_add_cta( $content, $args['content'], $args['skip'] );
 		});
 
@@ -183,6 +187,10 @@ function mai_cta_get_ctas( $type ) {
 				}
 
 				foreach ( $mai_ctas as $mai_cta ) {
+					if ( isset( $mai_cta['display'] ) && ! in_array( $type, (array) $mai_cta['display'] ) ) {
+						continue;
+					}
+
 					$cta = [
 						'location'   => isset( $mai_cta['location'] ) ? $mai_cta['location'] : '',
 						'skip'       => isset( $mai_cta['skip'] ) ? $mai_cta['skip'] : '',
@@ -300,19 +308,26 @@ function mai_cta_add_cta( $content, $cta, $skip ) {
 
 	$dom      = mai_cta_get_dom_document( $content );
 	$xpath    = new DOMXPath( $dom );
-	$elements = [ 'p', 'div', 'blockquote' ];
+	$elements = [ 'div', 'p', 'ul', 'blockquote' ];
 	$elements = apply_filters( 'mai_cta_content_elements', $elements );
 	$query    = [];
 
 	foreach ( $elements as $element ) {
-		$query[] = '/html/body/' . $element . '[string-length() > 0]';
+		$query[] = $element;
 	}
 
-	$elements = $xpath->query( implode( '|', $query ) );
+	// self::p | self::div | self::ul | self::blockquote
+	$query = 'self::' . implode( ' | self::', $query );
+
+	$elements = $xpath->query( sprintf( '/html/body/*[%s][string-length() > 0]', $query ) );
 
 	if ( ! $elements->length ) {
 		return $content;
 	}
+
+	// Build the HTML node.
+	$fragment = $dom->createDocumentFragment();
+	$fragment->appendXml( $cta );
 
 	$item = 0;
 
@@ -322,10 +337,6 @@ function mai_cta_add_cta( $content, $cta, $skip ) {
 		if ( $skip !== $item ) {
 			continue;
 		}
-
-		// Build the HTML node.
-		$fragment = $dom->createDocumentFragment();
-		$fragment->appendXml( $cta );
 
 		/**
 		 * Add cta after this element. There is no insertAfter() in PHP ¯\_(ツ)_/¯.
