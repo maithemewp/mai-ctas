@@ -148,7 +148,7 @@ function mai_cta_get_ctas( $type ) {
 
 	$transient = sprintf( 'mai_ctas_%s', $type );
 
-	// if ( $ctas[ $type ] !== get_transient( $transient ) ) {
+	if ( $ctas[ $type ] !== get_transient( $transient ) ) {
 
 		$query = new WP_Query(
 			[
@@ -220,8 +220,8 @@ function mai_cta_get_ctas( $type ) {
 		wp_reset_postdata();
 
 		// Set transient, and expire after 1 hour.
-		// set_transient( $transient, $ctas[ $type ], 1 * HOUR_IN_SECONDS );
-	// }
+		set_transient( $transient, $ctas[ $type ], 1 * HOUR_IN_SECONDS );
+	}
 
 	return $ctas[ $type ];
 }

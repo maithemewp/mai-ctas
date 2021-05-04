@@ -4,7 +4,7 @@
  * Plugin Name:     Mai CTAs
  * Plugin URI:      https://bizbudding.com/mai-theme/plugins/mai-ctas/
  * Description:     Display calls to action on posts, pages, and custom post types conditionally by category, tag, taxonomy, or entry title.
- * Version:         0.1.1
+ * Version:         0.1.2
  *
  * Author:          BizBudding
  * Author URI:      https://bizbudding.com
