@@ -227,7 +227,8 @@ function mai_cta_get_settings_metabox_sub_fields() {
 			'key'          => 'mai_cta_location',
 			'name'         => 'location',
 			'type'         => 'select',
-			'required'     => 1,
+			// 'required'     => 1,
+			// 'allow_null'   => 0,
 			'choices'      => [
 				''                     => __( 'None (inactive)', 'mai-ctas' ),
 				'before_entry'         => __( 'Before entry', 'mai-ctas' ),
