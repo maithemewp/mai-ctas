@@ -148,9 +148,10 @@ function mai_cta_get_ctas( $type ) {
 
 	$transient = sprintf( 'mai_ctas_%s', $type );
 
-	if ( $queried_ctas !== get_transient( $transient ) ) {
+	if ( false === ( $queried_ctas = get_transient( $transient ) ) ) {
 
-		$query = new WP_Query(
+		$queried_ctas = [];
+		$query        = new WP_Query(
 			[
 				'post_type'              => 'mai_cta',
 				'posts_per_page'         => 100,
@@ -221,11 +222,11 @@ function mai_cta_get_ctas( $type ) {
 
 		// Set transient, and expire after 1 hour.
 		set_transient( $transient, $queried_ctas, 1 * HOUR_IN_SECONDS );
+
+		$ctas[ $type ] = $queried_ctas;
 	}
 
-	$ctas[ $type ] = $queried_ctas;
-
-	return $ctas[ $type ];
+	return isset( $ctas[ $type ] ) ? $ctas[ $type ] : [];
 }
 
 /**
