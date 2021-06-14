@@ -222,11 +222,11 @@ function mai_cta_get_ctas( $type ) {
 
 		// Set transient, and expire after 1 hour.
 		set_transient( $transient, $queried_ctas, 1 * HOUR_IN_SECONDS );
-
-		$ctas[ $type ] = $queried_ctas;
 	}
 
-	return isset( $ctas[ $type ] ) ? $ctas[ $type ] : [];
+	$ctas[ $type ] = $queried_ctas;
+
+	return $ctas[ $type ];
 }
 
 /**
