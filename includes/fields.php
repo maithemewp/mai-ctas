@@ -158,6 +158,39 @@ function mai_cta_save_display_terms( $post_id ) {
 	wp_set_object_terms( $post_id, $terms, 'mai_cta_display', false );
 }
 
+add_action( 'acf/save_post', 'mai_cta_delete_transients', 99 );
+/**
+ * Clears the transients on post type save/update.
+ *
+ * @since 0.2.1
+ *
+ * @return void
+ */
+function mai_cta_delete_transients( $post_id ) {
+	if ( 'mai_cta' !== get_post_type( $post_id ) ) {
+		return;
+	}
+
+	$ctas = get_field( 'mai_ctas', $post_id );
+
+	if ( ! $ctas ) {
+		return;
+	}
+
+	foreach ( $ctas as $cta ) {
+		$types = isset( $cta['display'] ) ? $cta['display'] : [];
+
+		if ( ! $types ) {
+			continue;
+		}
+
+		foreach ( $types as $type ) {
+			delete_transient( sprintf( 'mai_ctas_%s', $type ) );
+			$prime_cache = mai_cta_get_ctas( $type, false );
+		}
+	}
+}
+
 add_action( 'init', 'mai_cta_add_settings_metabox', 99 );
 /**
  * Add CTA Settings metabox.
