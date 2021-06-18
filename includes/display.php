@@ -135,10 +135,11 @@ function mai_cta_do_cta( $args ) {
  * @since 0.1.0
  *
  * @param string $type
+ * @param bool   $use_cache
  *
  * @return array
  */
-function mai_cta_get_ctas( $type ) {
+function mai_cta_get_ctas( $type, $use_cache = true ) {
 	if ( ! function_exists( 'get_field' ) ) {
 		return [];
 	}
@@ -155,7 +156,7 @@ function mai_cta_get_ctas( $type ) {
 
 	$transient = sprintf( 'mai_ctas_%s', $type );
 
-	if ( false === ( $queried_ctas = get_transient( $transient ) ) ) {
+	if ( ! $use_cache || ( false === ( $queried_ctas = get_transient( $transient ) ) ) ) {
 
 		$queried_ctas = [];
 		$query        = new WP_Query(
