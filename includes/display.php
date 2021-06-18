@@ -49,10 +49,15 @@ function mai_cta_do_cta( $args ) {
 		]
 	);
 
+	// Bail if no cta content.
+	if ( ! $args['content'] ) {
+		return;
+	}
+
 	$locations = mai_cta_get_locations();
 
 	// Bail if no location and no content. Only check isset for location since 'content' has no hook.
-	if ( ! ( isset( $locations[ $args['location'] ] ) && $args['content'] ) ) {
+	if ( ! isset( $locations[ $args['location'] ] ) ) {
 		return;
 	}
 
@@ -116,9 +121,11 @@ function mai_cta_do_cta( $args ) {
 
 	} else {
 
-		add_action( $locations[ $args['location'] ], function() use ( $args ) {
+		$priority = isset( $locations[ $args['location'] ]['priority'] ) && $locations[ $args['location'] ]['priority'] ? $locations[ $args['location'] ]['priority'] : 10;
+
+		add_action( $locations[ $args['location'] ]['hook'], function() use ( $args, $priority ) {
 			echo mai_cta_get_processed_content( $args['content'] );
-		});
+		}, $priority );
 	}
 }
 
@@ -244,12 +251,30 @@ function mai_cta_get_locations() {
 	}
 
 	$hooks = [
-		'before_entry'         => 'genesis_before_entry',
-		'before_entry_content' => 'genesis_before_entry_content',
-		'content'              => '', // No hooks, counted in content.
-		'after_entry_content'  => 'genesis_after_entry_content',
-		'after_entry'          => 'genesis_after_entry',
-		'before_footer'        => 'genesis_after_content_sidebar_wrap',
+		'before_entry'         => [
+			'hook'     => 'genesis_before_entry',
+			'priority' => 10,
+		],
+		'before_entry_content' => [
+			'hook'     => 'genesis_before_entry_content',
+			'priority' => 10,
+		],
+		'content'              => [
+			'hook'     => '', // No hooks, counted in content.
+			'priority' => null,
+		],
+		'after_entry_content'  => [
+			'hook'     => 'genesis_after_entry_content',
+			'priority' => 10,
+		],
+		'after_entry'          => [
+			'hook'     => 'genesis_after_entry',
+			'priority' => 10,
+		],
+		'before_footer'        => [
+			'hook'     => 'genesis_after_content_sidebar_wrap',
+			'priority' => 10,
+		],
 	];
 
 	return apply_filters( 'mai_cta_location_hooks', $hooks );
