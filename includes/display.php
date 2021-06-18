@@ -269,7 +269,7 @@ function mai_cta_get_locations() {
 		],
 		'after_entry'          => [
 			'hook'     => 'genesis_after_entry',
-			'priority' => 10,
+			'priority' => 8, // 10 was after comments.
 		],
 		'before_footer'        => [
 			'hook'     => 'genesis_after_content_sidebar_wrap',
