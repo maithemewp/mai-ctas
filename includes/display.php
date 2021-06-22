@@ -66,13 +66,8 @@ function mai_cta_do_cta( $args ) {
 		return;
 	}
 
-	$show = true;
-
 	// Check taxonomies.
 	if ( $args['taxonomies'] ) {
-
-		$tax_show = false;
-		$tax_hide = false;
 
 		// Check if showing.
 		foreach ( $args['taxonomies'] as $taxonomy => $data ) {
@@ -83,29 +78,20 @@ function mai_cta_do_cta( $args ) {
 				continue;
 			}
 
-			if ( ! has_term( $term_ids, $taxonomy ) ) {
-				continue;
+			$has_term = has_term( $term_ids, $taxonomy );
+
+			if ( $has_term && 'NOT IN' === $operator ) {
+				return;
 			}
 
-			switch ( $operator ) {
-				case 'IN':
-					$tax_show = true;
-				break;
-				case 'NOT IN':
-					$tax_hide = true;
-				break;
+			if ( ! $has_term && 'IN' === $operator ) {
+				return;
 			}
 		}
-
-		$show = $tax_show && ! $tax_hide;
 	}
 
 	// If including this entry.
 	if ( $args['include'] && in_array( get_the_ID(), (array) $args['include'] ) ) {
-		$show = true;
-	}
-
-	if ( ! $show ) {
 		return;
 	}
 
