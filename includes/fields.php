@@ -82,7 +82,7 @@ function mai_cta_load_display( $field ) {
 		]
 	);
 
-	if ( $terms && ! is_wp_error( $tersm ) ) {
+	if ( $terms && ! is_wp_error( $terms ) ) {
 		$field['choices'] = wp_list_pluck( $terms, 'name', 'slug' );
 	}
 
