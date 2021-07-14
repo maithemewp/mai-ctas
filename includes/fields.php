@@ -314,10 +314,18 @@ function mai_cta_get_settings_metabox_sub_fields() {
 			],
 		],
 		[
-			'key'       => 'mai_cta_taxonomies_tab',
-			'label'     => __( 'Taxonomies', 'mai-locations' ),
-			'type'      => 'tab',
-			'placement' => 'top',
+			'key'               => 'mai_cta_taxonomies_tab',
+			'label'             => __( 'Taxonomies', 'mai-locations' ),
+			'type'              => 'tab',
+			'placement'         => 'top',
+			'conditional_logic' => [
+				[
+					[
+						'field'    => 'mai_cta_location',
+						'operator' => '!=empty',
+					],
+				],
+			],
 		],
 	];
 
@@ -395,10 +403,18 @@ function mai_cta_get_settings_metabox_sub_fields() {
 
 	$fields = array_merge( $fields, [
 		[
-			'key'       => 'mai_cta_entries_tab',
-			'label'     => __( 'Entries', 'mai-locations' ),
-			'type'      => 'tab',
-			'placement' => 'top',
+			'key'               => 'mai_cta_entries_tab',
+			'label'             => __( 'Entries', 'mai-locations' ),
+			'type'              => 'tab',
+			'placement'         => 'top',
+			'conditional_logic' => [
+				[
+					[
+						'field'    => 'mai_cta_location',
+						'operator' => '!=empty',
+					],
+				],
+			],
 		],
 		[
 			'label'             => __( 'Include entries', 'mai-ctas' ),
