@@ -61,38 +61,43 @@ function mai_cta_do_cta( $args ) {
 		return;
 	}
 
+	// Sanitize.
+	$args['exclude'] = is_array( $args['exclude'] ) ? array_map( 'absint', $args['exclude'] ) : $args['exclude'];
+	$args['include'] = is_array( $args['include'] ) ? array_map( 'absint', $args['include'] ) : $args['include'];
+
 	// Bail if excluding this entry.
 	if ( $args['exclude'] && in_array( get_the_ID(), (array) $args['exclude'] ) ) {
 		return;
 	}
 
-	// Check taxonomies.
-	if ( $args['taxonomies'] ) {
+	// If including this entry.
+	$include = $args['include'] && in_array( get_the_ID(), (array) $args['include'] );
 
-		// Check if showing.
+	// If not already including, check taxonomies.
+	if ( ! $include && $args['taxonomies'] ) {
+
+		// Loop through all taxonomies to give a chance to bail if NOT IN.
 		foreach ( $args['taxonomies'] as $taxonomy => $data ) {
 			$term_ids = isset( $data['terms'] ) ? $data['terms'] : [];
 			$operator = isset( $data['operator'] ) ? $data['operator'] : 'IN';
 
+			// Skip this taxonomy if we don't have the data we need.
 			if ( ! ( $term_ids && $operator ) ) {
 				continue;
 			}
 
 			$has_term = has_term( $term_ids, $taxonomy );
 
+			// Bail if we have a term and we aren't displaying here.
 			if ( $has_term && 'NOT IN' === $operator ) {
 				return;
 			}
 
+			// Bail if we have don't a term and we are dislaying here.
 			if ( ! $has_term && 'IN' === $operator ) {
 				return;
 			}
 		}
-	}
-
-	// If including this entry.
-	if ( $args['include'] && in_array( get_the_ID(), (array) $args['include'] ) ) {
-		return;
 	}
 
 	if ( 'content' === $args['location'] ) {
@@ -132,7 +137,7 @@ function mai_cta_get_ctas( $type, $use_cache = true ) {
 
 	static $ctas = null;
 
-	if ( isset( $ctas[ $type ] ) ) {
+	if ( isset( $ctas[ $type ] ) && $use_cache ) {
 		return $ctas[ $type ];
 	}
 
@@ -166,13 +171,7 @@ function mai_cta_get_ctas( $type, $use_cache = true ) {
 		);
 
 		if ( $query->have_posts() ) {
-			$taxonomies = get_taxonomies(
-				[
-					'public'      => 'true',
-					'object_type' => [ $type ],
-				],
-				'names'
-			);
+			$taxonomies = get_object_taxonomies( $type );
 
 			while ( $query->have_posts() ) : $query->the_post();
 				$mai_ctas = get_field( 'mai_ctas' );
