@@ -24,6 +24,10 @@ function mai_do_ctas() {
 	}
 
 	foreach ( $ctas as $cta ) {
+		if ( apply_filters( 'mai_cta_hide_cta', false, $cta ) ) {
+			continue;
+		}
+
 		mai_cta_do_cta( $cta );
 	}
 }
@@ -186,6 +190,7 @@ function mai_cta_get_ctas( $type, $use_cache = true ) {
 					}
 
 					$cta = [
+						'id'         => get_the_ID(),
 						'location'   => isset( $mai_cta['location'] ) ? $mai_cta['location'] : '',
 						'skip'       => isset( $mai_cta['skip'] ) ? $mai_cta['skip'] : '',
 						'include'    => isset( $mai_cta['include'] ) ? $mai_cta['include'] : '',
